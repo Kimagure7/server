@@ -197,9 +197,9 @@ if __name__ == "__main__":
     scheme = "neo4j"  # Connecting to Aura, use the "neo4j+s" URI scheme
     host_name = "localhost"
     port = 7474
-    url = "bolt://47.119.121.73:7687".format(scheme=scheme, host_name=host_name, port=port)
+    url = "bolt://0.0.0.0:7687".format(scheme=scheme, host_name=host_name, port=port)
     user = "neo4j"
-    password = "disgrafs"
+    password = "11"
     Neo4jServer = pytoneo.App(url, user, password)
     print("Neo4j服务器连接成功...")
     
