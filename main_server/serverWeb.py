@@ -62,11 +62,10 @@ async def main_logic(websocket, path):
                 
                 recv_list = eval(recv_text)
                 
-                if recv_list[0] == "move":
-                    print("修改指令")
-                    # print(recv_list[2])
-                    # Neo4jServer.delete_node(recv_list[1])
-                    # Neo4jServer.create_newnode(recv_list[2])
+                if recv_list[0] == "rename":
+                    print("重命名")
+                    print(recv_list[1])
+                    Neo4jServer.rename_node(recv_list[1])
                     
                 elif recv_list[0] == "delete":
                     print("正在删除")
