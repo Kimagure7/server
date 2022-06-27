@@ -16,6 +16,7 @@ class App:
         with self.driver.session() as session:
             # Write transactions allow the driver to handle retries and transient errors
             i=0
+            # 将含有空格的标签转换成下划线连接
             for labelname in newnode['labels']:
                 labelnamelist=labelname.split()
                 labelname_='_'.join(labelnamelist)
@@ -26,6 +27,7 @@ class App:
             session.write_transaction(
                     self._createnamenode, result[0])
             i=1
+            # 创建标签（可选） 新建关系
             for labelname in newnode['labels']:
                 if(self.find_label(labelname)==0):  
                     self.create_labelnode(labelname)
@@ -55,8 +57,10 @@ class App:
 
     @staticmethod
     def _createnamenode(tx,id):
+        # 创建一个与文件名字相同的标签
+        # 修改：如果已存在同名文件标签 直接新增一个tag
         query=("MATCH (n) WHERE n.id = "+str(id)+
-                " CREATE (m:Label { name: n.name}) "+
+                " MERGE (m:Label { name: n.name}) "+ # create->merge
                 " CREATE (n)-[r1:tag]->(m) RETURN m"
         )
         tx.run(query)
@@ -79,6 +83,7 @@ class App:
         for labelname in labellist:
             query=query+':'+labelname
         query=query+newnode['property']+") "
+        # 增加一个属性id 大小是内置id
         query=query+"SET p.id=id(p) RETURN p.id AS id"
         result = tx.run(query)
         return [record["id"] for record in result]
