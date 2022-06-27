@@ -127,7 +127,8 @@ async def main_logic(websocket, path):
                 elif recv_list[0] == "delete":
                     print("正在删除")
                     print(recv_list[1])
-                    Neo4jServer.delete_node(recv_list[1].lower())
+                    # 传入的是字典
+                    Neo4jServer.delete_node(recv_list[1])
                     
                 elif recv_list[0] == "invalid":
                     print("无效，忽略此消息")

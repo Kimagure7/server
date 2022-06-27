@@ -22,6 +22,11 @@ class App:
                 labelname_='_'.join(labelnamelist)
                 newnode['labels'][i]=labelname_
                 i=i+1
+            # 获取owner给label
+            owner = newnode['property']
+            owner = owner[owner.find('owner')+8:]
+            owner = owner[:owner.find('\'')]
+            
             result=session.write_transaction(
                 self._create_and_return_newnode, self,newnode)
             session.write_transaction(
@@ -29,27 +34,26 @@ class App:
             i=1
             # 创建标签（可选） 新建关系
             for labelname in newnode['labels']:
-                if(self.find_label(labelname)==0):  
-                    self.create_labelnode(labelname)
+                self.create_labelnode(labelname,owner)
                 session.write_transaction(
-                    self._create_and_return_relationship, labelname, result[0],i)
+                    self._create_and_return_relationship, labelname, result[0],owner)
                 i=i+1
 
 
-    def create_labelnode(self, labelname):
+    def create_labelnode(self, labelname,owner):
         with self.driver.session() as session:
             # Write transactions allow the driver to handle retries and transient errors
             session.write_transaction(
-                self._create_and_return_labelnode, labelname)
+                self._create_and_return_labelnode, labelname,owner)
 
     def find_label(self, labelname):
         with self.driver.session() as session:
             result = session.read_transaction(self._find_and_return_label, labelname)
             return len(result)
 
-    def delete_node(self,nodename):
+    def delete_node(self,deletenode):
         with self.driver.session() as session:
-            session.write_transaction(self._delete_node, nodename)
+            session.write_transaction(self._delete_node, deletenode)
 
     def delete_all(self):
         with self.driver.session() as session:
@@ -59,17 +63,18 @@ class App:
     def _createnamenode(tx,id):
         # 创建一个与文件名字相同的标签
         # 修改：如果已存在同名文件标签 直接新增一个tag
+        # 与节点同名的节点标记owner属性
         query=("MATCH (n) WHERE n.id = "+str(id)+
-                " MERGE (m:Label { name: n.name}) "+ # create->merge
+                " MERGE (m:Label { name: n.name, owner: n.owner}) "+ # create->merge
                 " CREATE (n)-[r1:tag]->(m) RETURN m"
         )
         tx.run(query)
 
     @staticmethod      
-    def _create_and_return_relationship(tx, labelname, id, tag_num):
+    def _create_and_return_relationship(tx, labelname, id,owner):
         query = (
             "MATCH (n:FILE) WHERE n.id="+str(id)+
-            " MATCH (m:Label) WHERE m.name=\'"+ labelname+"\' " 
+            " MATCH (m:Label) WHERE m.name=\'"+ labelname+"\' , m.owner = \'"+owner+"\'" 
             "CREATE (n)-[r1:tag]->(m) "
             # "CREATE (m)-[r2:tag"+"]->(n) "
             "RETURN n,m"
@@ -89,12 +94,12 @@ class App:
         return [record["id"] for record in result]
 
     @staticmethod
-    def _create_and_return_labelnode(tx, labelname):
+    def _create_and_return_labelnode(tx, labelname,owner):
         query = (
-            "CREATE (p1:Label{ name: $labelname }) "
+            "MERGE (p1:Label{ name: $labelname , owner: $owner}) "
             "RETURN p1"
         )
-        tx.run(query, labelname=labelname)
+        tx.run(query, labelname=labelname,owner=owner)
 
 
     @staticmethod
@@ -107,11 +112,20 @@ class App:
         return [record["p"] for record in result]
 
     @staticmethod
-    def _delete_node(tx, nodename):
+    def _delete_node(tx, deletenode):
+        # 从deletenode中分割出 name owner path三个信息
+        nodename = deletenode['nodename']
+        path = deletenode['path']
+        owner = deletenode['owner']
         query = (
-            "MATCH (p:FILE) "
-            "WHERE p.name=\'"+nodename+"\' "
-            "DETACH DELETE p"
+            "MATCH (p:FILE{nodename:\""+nodename+"\", path = \""+path+"\",owner = \""+owner+"\"})" 
+            " DETACH DELETE p"
+            
+        )
+        tx.run(query)
+        # 记得删除孤立节点
+        query = (
+            "MATCH (n) where not exists((n)--()) detach delete n"
         )
         tx.run(query)
 
