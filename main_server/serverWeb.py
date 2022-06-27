@@ -3,19 +3,16 @@ import websockets
 import pytoneo
 import time
 
-class client_struct:
-    username            = 0
-    index_client        = 0
-    web_websocket       = 0
-    client_websocket    = 0
-
-#用户数组和用户人数
-client_array = []
-client_num = 0
-
 #标签服务器数组
 tag_array = []
 tag_num = 0
+
+class user_struct:
+    username = ""
+    web_websocket = 0
+#用户数组和用户人数
+user_array = []
+user_num = 0
 
 Neo4jServer = 0
 
@@ -24,7 +21,6 @@ Neo4jServer = 0
 async def main_logic(websocket, path):
     #引用全局变量
     global tag_num
-    global client_num
     global Neo4jServer
     
     try:
@@ -39,10 +35,10 @@ async def main_logic(websocket, path):
         print("websocket: ",websocket.port)
         
         #主页面链接上时，返回确认信息
-        if recv_text == "mainWeb":
-            await websocket.send("Close:A Good Connection, please close it")
-            await websocket.close_connection()
-            return
+        # if recv_text == "mainWeb":
+        #     await websocket.send("Close:A Good Connection, please close it")
+        #     await websocket.close_connection()
+        #     return
         
         #分解接收到的信息
         tag_split = recv_text.split('_')
@@ -50,53 +46,36 @@ async def main_logic(websocket, path):
         
         #网页端连接逻辑
         if tag_split[1] == "web":
-            
-            client_item = client_struct()
-            client_item.username        = tag_split[0]
-            client_item.web_websocket   = websocket
-            
-            client_array.append(client_item)
-            
-            client_index = client_num
-            client_num = client_num + 1
-            
+        # 现在网页端只保留重命名和删除功能
             print(tag_split,"：",recv_text)
+            #记录用户信息
+            user_item = user_struct()
+            user_item.username = tag_split[0]
+            user_item.web_websocket = websocket
+            
+            user_array.append(tag_split[1])
+            user_num = user_num + 1
             
             while True:
                 recv_text = await websocket.recv()
                 print(tag_split,"：",recv_text)
                 
-                if client_array[client_index].index_client == 1: 
-                    await client_array[client_index].client_websocket.send(recv_text)
-                else:
-                    await websocket.send("no_client")
-        
-        #客户端连接逻辑            
-        elif tag_split[1] == "client":
-            
-            #更改信号量，添加用户端的通信地址
-            client_index = -1
-            for client_item in client_array:
-                client_index = client_index + 1
-                if client_item.username == tag_split[0]:
-                    client_item.index_client    = 1 
-                    client_item.client_websocket= websocket
-                    break
-            
-            print(tag_split,"：",recv_text)
-            
-            while True:
-                    recv_text = await websocket.recv()
-                    print(tag_split,"：",recv_text)
-
-                    if tag_num == 0:
-                        print("no tag server")
-
-                    else:
-                        #选择一个tag服务器作为打标服务器，之后可改为随机取打标服务器
-                        tag_index = 0
-                        await tag_array[tag_index].send(recv_text)
+                recv_list = eval(recv_text)
+                
+                if recv_list[0] == "move":
+                    print("修改指令")
+                    # print(recv_list[2])
+                    # Neo4jServer.delete_node(recv_list[1])
+                    # Neo4jServer.create_newnode(recv_list[2])
                     
+                elif recv_list[0] == "delete":
+                    print("正在删除")
+                    print(recv_list[1])
+                    Neo4jServer.delete_node(recv_list[1])
+                    
+                else:
+                    print("网页端传输有误")
+                
         #标签端连接逻辑
         elif tag_split[1] == "tag":
             
@@ -112,30 +91,12 @@ async def main_logic(websocket, path):
                 
                 recv_list = eval(recv_text)
                 
-                #尝试解码从tag服务器中读出的数据，然后进行增删改的操作，所有跟数据库交互的操作在这边完成
+                #现在只剩下create功能
                 if recv_list[0] == "create":
                     print("创建指令")
                     print(recv_list[1])
                     Neo4jServer.create_newnode(recv_list[1])
-                    
-                elif recv_list[0] == "move":
-                    print("修改指令")
-                    # print(recv_list[2])
-                    # Neo4jServer.delete_node(recv_list[1])
-                    # Neo4jServer.create_newnode(recv_list[2])
-                    
-                elif recv_list[0] == "delete":
-                    print("正在删除")
-                    print(recv_list[1])
-                    # 传入的是字典
-                    Neo4jServer.delete_node(recv_list[1])
-                    
-                elif recv_list[0] == "invalid":
-                    print("无效，忽略此消息")
-                    
-                elif recv_list[0] == "error":
-                    print("错误指令")
-                    
+                                        
                 else:
                     print("标签服务器传输有误")
         
@@ -148,25 +109,17 @@ async def main_logic(websocket, path):
     #当前的websocket连接断开        
     except websockets.ConnectionClosed:
         
-        client_index = -1
-        for client_item in client_array:
-            client_index = client_index + 1
+        user_index = -1
+        for user_item in user_array:
+            user_index = user_index + 1
             #网页连接断开则弹出整个连接
-            if client_item.web_websocket == websocket:
-                #先退出客户端
+            if user_item.web_websocket == websocket:
                 
-                #再弹出整个连接
-                client_array.pop(client_index)
-                client_num = client_num - 1
+                #弹出整个连接
+                user_array.pop(user_index)
+                user_num = user_num - 1
                 
-                print(client_item.username," web exit")
-                return
-            #客户端连接断开则只删除客户端信息
-            elif client_item.client_websocket == websocket:
-                client_item.index_client    = 0
-                client_item.client_websocket= 0
-                
-                print(client_item.username," client exit")
+                print(user_item.username," web exit")
                 return
             
         tag_index = -1
@@ -181,18 +134,15 @@ async def main_logic(websocket, path):
             return
         
         #未找到这个websocket    
-        print("client didn't login")
+        print("没见过的神奇websocket")
         
         return
     
-    # #其他的异常情况
-    # except:
-    #     print("错误的连接信息")
 
 if __name__ == "__main__":
     #端口名、用户名、密码根据需要改动
     #create_newnode(node)用于创建结点（包括检测标签、创建标签节点、添加相应的边等功能）
-    #delete_node(node.name)用于删去名为node.name的结点
+    #delete_node(node) 需要提供文件名 所有者 路径
     
     #连接数据库 
     scheme = "neo4j"  # Connecting to Aura, use the "neo4j+s" URI scheme
