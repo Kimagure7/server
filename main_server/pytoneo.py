@@ -114,11 +114,13 @@ class App:
     @staticmethod
     def _delete_node(tx, deletenode):
         # 从deletenode中分割出 name owner path三个信息
-        nodename = deletenode['nodename']
+        nodename_split = deletenode['nodename'].split('.')
+        nodename = nodename_split[0]
+        nodeext = nodename_split[1]
         path = deletenode['path']
         owner = deletenode['owner']
         query = (
-            "MATCH (p:FILE{nodename:\""+nodename+"\", path = \""+path+"\",owner = \""+owner+"\"})" 
+            "MATCH (p:FILE{nodename:\""+nodename+"\", ext = \""+nodeext+"\", path = \""+path+"\",owner = \""+owner+"\"})" 
             " DETACH DELETE p"
             
         )
