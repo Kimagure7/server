@@ -130,8 +130,8 @@ async def main_logic(websocket, path):
                 tag_array.pop(tag_index)
                 tag_num = tag_num - 1
                 
-            print("打标服务器[",tag_index,"]已退出")
-            return
+                print("打标服务器[",tag_index,"]已退出")
+                return
         
         #未找到这个websocket    
         print("没见过的神奇websocket")
