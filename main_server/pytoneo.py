@@ -80,7 +80,7 @@ class App:
         query = (
             "MATCH (n:FILE) WHERE n.id="+str(id)+
             " MATCH (m:Label) WHERE m.name=\'"+ labelname+"\' and m.owner = \'"+owner+"\'" 
-            "CREATE (n)-[r1:tag]->(m) "
+            "MERGE (n)-[r1:tag]->(m) "
             # "CREATE (m)-[r2:tag"+"]->(n) "
             "RETURN n,m"
         )
