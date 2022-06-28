@@ -122,7 +122,7 @@ class App:
     @staticmethod
     def _delete_node(tx, deletenode):
         # 从deletenode中分割出 name owner path三个信息
-        nodename_split = deletenode['nodename'].split('.')
+        nodename_split = deletenode['name'].split('.')
         nodename = nodename_split[0]
         nodeext = nodename_split[1]
         path = deletenode['path']
@@ -145,7 +145,7 @@ class App:
         
     @staticmethod
     def _rename_node(tx,node):
-        nodename_split = node['nodename'].split('.')
+        nodename_split = node['name'].split('.')
         nodename = nodename_split[0]
         nodeext = nodename_split[1]
         path = node['path']
