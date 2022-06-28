@@ -21,6 +21,7 @@ Neo4jServer = 0
 async def main_logic(websocket, path):
     #引用全局变量
     global tag_num
+    global user_num
     global Neo4jServer
     
     try:
