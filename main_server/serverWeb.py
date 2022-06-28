@@ -73,7 +73,7 @@ async def main_logic(websocket, path):
                     Neo4jServer.delete_node(recv_list[1])
                     
                 else:
-                    print("网页端传输有误")
+                    print("网页端传输有误:"+recv_list)
                 
         #标签端连接逻辑
         elif tag_split[1] == "tag":
@@ -97,7 +97,7 @@ async def main_logic(websocket, path):
                     Neo4jServer.create_newnode(recv_list[1])
                                         
                 else:
-                    print("标签服务器传输有误")
+                    print("标签服务器传输有误:"+recv_list)
         
         #错误的连接信息        
         else:
