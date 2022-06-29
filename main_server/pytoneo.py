@@ -26,7 +26,8 @@ class App:
                 i=i+1
             # 获取owner给label
             owner = newnode['property']
-            owner = owner[owner.find('owner')+8:]
+            owner = owner[owner.find('owner'):]
+            owner = owner[owner.find('\'')+1:]#去掉第一个引号
             owner = owner[:owner.find('\'')]
             
             result=session.write_transaction(
