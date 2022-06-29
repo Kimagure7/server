@@ -155,7 +155,7 @@ async def main_logic(websocket, path):
         return
     
     except Exception as e:
-        print(e)
+        traceback.print_exc()
     
 
 if __name__ == "__main__":
