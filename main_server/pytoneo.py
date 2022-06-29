@@ -260,14 +260,13 @@ class App:
         # print(data)
         for node in data:
             property = node['p']
-            print(property)
             name = property['name']
             ext = property['ext']
             # 下面两个对应节点的前后path
             originpath = property['path']
             finalpath = newpath + originpath[len(path):]
             query=(
-                "match (n{name: \""+name+"\", owner: \""+owner+"\", path:\""+path+"\", ext:\"" +ext +"\"}) "
+                "match (n:FILE{name: \""+name+"\", owner: \""+owner+"\", path:\""+originpath+"\", ext:\"" +ext +"\"}) "
                 "set n.path = \""+finalpath+"\""
             )
             tx.run(query)
