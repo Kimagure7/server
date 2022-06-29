@@ -252,13 +252,14 @@ class App:
         owner = node['owner']
         newpath = node['newpath']
         query = (
-            "match (p{owner: \""+owner+"\"}) where p.path starts with \""+path+"\" "
+            "match (p:FILE{owner: \""+owner+"\"}) where p.path starts with \""+path+"\" "
             "return p"
         )
         data = tx.run(query).data()
+        # print(data)
         for node in data:
             property = node['p']
-            #print(property)
+            print(property)
             name = property['name']
             ext = property['ext']
             # 下面两个对应节点的前后path
@@ -284,8 +285,8 @@ if __name__ == "__main__":
     user = "neo4j"
     password = "11"
     #node = {"nodename":"ipadpro.pdf","path":"home/","owner":"zzy","newname":"hi.txt"}
-    node = {"newpath":"home/","path":"dsa/","owner":"zzy"}
+    node = {"newpath":"home/","path":"TIME/","owner":"tanjf"}
     app = App(url, user, password)
-    app.delete_floder(node)
+    app.rename_floder(node)
     app.close()
     
