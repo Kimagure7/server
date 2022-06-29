@@ -1,4 +1,5 @@
 import asyncio
+from tkinter import E
 import websockets
 import pytoneo
 import time
@@ -152,6 +153,9 @@ async def main_logic(websocket, path):
         print("没见过的神奇websocket")
         
         return
+    
+    except Exception as e:
+        print(e)
     
 
 if __name__ == "__main__":
