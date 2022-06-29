@@ -170,7 +170,7 @@ class App:
             # 下面对应节点的path
             nodepath = property['path']
             query=(
-                "match (n{name: \""+name+"\", owner: \""+owner+"\", path:\""+path+"\", ext:\"" +ext +"\"}) "
+                "match (n{name: \""+name+"\", owner: \""+owner+"\", path:\""+nodepath+"\", ext:\"" +ext +"\"}) "
                 "detach delete n"
             ) 
             tx.run(query)
