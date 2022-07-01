@@ -253,7 +253,6 @@ class App:
             " return labels(p),p.size"
         )
         nodedata = tx.run(query).data()[0]
-        print(nodedata)
         # 拷贝一个节点
         # 直接假设没重名的
         size = nodedata['p.size']
@@ -278,7 +277,6 @@ class App:
                 "\', owner: \'"+new_owner+"\'})"
                 " CREATE (p)-[r1:tag]->(m) "
             )
-            print(query)
             tx.run(query)
 
         
