@@ -148,7 +148,11 @@ class App:
             " return id(p)"
         )
         # 获取ip以删除共享的文件 如果自己删的就是别人共享过来的文件 id匹配不上则不会进一步删除
-        id = tx.run(query).data()[0]["id(p)"]
+        datatemp = tx.run(query).data()
+        if(len(datatemp)==0):
+            return
+        print(datatemp)
+        id = datatemp[0]['id(p)']
         query = (
             "match (p:FILE{id:"+str(id)+"}) "
             "detach delete p"
